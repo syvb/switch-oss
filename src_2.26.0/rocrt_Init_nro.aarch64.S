@@ -16,7 +16,7 @@
 
 #include "rocrt.AssemblyOffset.h"
 
-    .section ".rocrt_nro.init", "a"
+    .section ".rocrt_nro.init", "ax"
     .align  2
     .hidden __bss_start
     .hidden __bss_end
@@ -31,6 +31,9 @@
 1:  .word   1
     .word   __rocrt - 1b
     .word   __rocrt_ver - 1b
+
+    .balign NN_ROCRT_NRO_HEADER_ALIGN
+
     .section ".rocrt_nro.info", "a"
     .align  2
 __rocrt:
@@ -41,6 +44,12 @@ __rocrt:
     .word   __eh_frame_hdr_start - __rocrt
     .word   __eh_frame_hdr_end - __rocrt
     .word   _ZN2nn5rocrt10g_RoModuleE - __rocrt
+    .word   __relro_start - __rocrt
+    .word   __full_relro_end - __rocrt
+    .word   __nx_debuglink_start - __rocrt
+    .word   __nx_debuglink_end - __rocrt
+    .word   __note_gnu_build_id_start - __rocrt
+    .word   __note_gnu_build_id_end - __rocrt
 __rocrt_ver:
     .word   NN_SDK_VERSION_MAJOR
     .word   NN_SDK_VERSION_MINOR

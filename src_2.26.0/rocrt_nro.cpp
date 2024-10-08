@@ -148,13 +148,15 @@ extern "C"
                             unsigned char *tdata_start, unsigned char *tdata_end,
                             unsigned char *tbss_start, unsigned char *tbss_end);
 
-    void* __dso_handle __attribute__ ((visibility ("hidden"))) = &__dso_handle;
+    // TLS ランタイムの実装の都合で __dso_handle は __tbss_end の前に置いてある必要があるため、.data.rel.ro セクションに置く
+    void* __dso_handle __attribute__ ((visibility ("hidden"), section(".data.rel.ro.__dso_handle"))) = &__dso_handle;
     int __aeabi_atexit(void* object, void (*destroyer)(void*), void* dso_handle) __attribute__ ((visibility ("hidden")));
     int __cxa_atexit(void (*destroyer)(void*), void* pObject, void* dso_handle) __attribute__ ((visibility ("hidden")));
     int __cxa_finalize(void* pDsoHandle) __attribute__ ((visibility ("hidden")));
     void _init() __attribute__ ((visibility ("protected")));
     void _fini() __attribute__ ((visibility ("protected")));
-    static volatile int nnmuslTlsInitializationPhase = 0;
+    // .data セクションが空である場合に、.data の後ろに配置される orphan section の位置が変わることがあるため、以下のシンボルを .data セクションに置く
+    static volatile int nnmuslTlsInitializationPhase __attribute__((section(".data._ZL28nnmuslTlsInitializationPhase"))) = 0;
 
     void _init()
     {
@@ -186,7 +188,7 @@ extern "C"
 
     void _fini()
     {
-        __cxa_finalize(__dso_handle);
+        __cxa_finalize(static_cast<void*>(&__dso_handle));
 
         for (void (**f)() = __fini_array_end; f > __fini_array_start; --f)
         {
